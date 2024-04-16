@@ -53,4 +53,43 @@ def to_binary(df: pd.DataFrame) -> pd.DataFrame:
         
         dfs.append(binary_df)
 
-    return pd.concat(dfs, axis=1).dropna()
+    return pd.concat(dfs, axis=1).dropna().astype(int)
+
+def get_min_max_info(df: pd.DataFrame) -> dict:
+    """
+    We need to store the min-max log returns for each instrument.
+    """
+    EPSILON = np.finfo(float).eps
+    ccy_pairs = set([s.split('_')[0] for s in df.columns])
+    min_max = dict()
+    for instr in ccy_pairs:
+        curr_samples = df["{}_log_ret".format(instr)]
+        X_min = curr_samples.min() - EPSILON
+        X_max = curr_samples.max() + EPSILON
+        min_max[instr] = [X_min, X_max]
+    return min_max
+
+def to_float(df: pd.DataFrame, min_max: dict) -> pd.DataFrame:
+    """
+    Reverse process: from 16-bits binary data, get the log returns.
+    We need additional info: to map everything back to consistent returns,
+    pass the min-max log returns per instrument (e.g. USDBRL moves more than USDJPY).
+    """
+    # Group the columns e.g. EURUSD_01, ..., EURUSD_16 belong to the EURUSD variable.
+    ccy_pairs = list(set([s.split('_')[0] for s in df.columns]))
+
+    grouped = df.groupby(lambda x: x.split('_')[0], axis=1)
+    for ccy, group in grouped:
+        df[f'{ccy}'] = group.apply(lambda row: ''.join(map(str, row)), axis=1)
+    df = df[ccy_pairs]
+
+    df_int = df.applymap(lambda x: int(x, 2))
+
+    dfs = []
+    for instr in ccy_pairs:
+        curr_samples = df_int[instr]
+
+        X_real = (min_max[instr][0] + curr_samples * (min_max[instr][1] - min_max[instr][0]) / 65535)
+        dfs.append(pd.DataFrame(X_real, columns=[instr]))
+    
+    return pd.concat(dfs, axis=1)
