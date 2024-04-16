@@ -36,7 +36,7 @@ def to_binary(df: pd.DataFrame) -> pd.DataFrame:
     """
     EPSILON = np.finfo(float).eps
 
-    ccy_pairs = set([s.split('_')[0] for s in df.columns])
+    ccy_pairs = sorted(set([s.split('_')[0] for s in df.columns]), key=df.columns.tolist().index) # To keep the order
     dfs = []
     for instr in ccy_pairs:
         curr_samples = df["{}_log_ret".format(instr)]
@@ -60,7 +60,7 @@ def get_min_max_info(df: pd.DataFrame) -> dict:
     We need to store the min-max log returns for each instrument.
     """
     EPSILON = np.finfo(float).eps
-    ccy_pairs = set([s.split('_')[0] for s in df.columns])
+    ccy_pairs = sorted(set([s.split('_')[0] for s in df.columns]), key=df.columns.tolist().index)
     min_max = dict()
     for instr in ccy_pairs:
         curr_samples = df["{}_log_ret".format(instr)]
