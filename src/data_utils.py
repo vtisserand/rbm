@@ -28,8 +28,32 @@ def compute_log_ret(df: pd.DataFrame):
     return df.iloc[1:]
 
     
-def to_binary(df: pd.DataFrame):
+def to_binary(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    To map log returns to a 16-bits digit, we compute the spread between the current value
+    and the minimum value amongst all the samples, and get a [0,1]-valued float computing
+    (X_curr - X_min) / (X_max - X_min). Then, multiply by 65535 (2^16 - 1).
+    """
+    Nsamples, Nvariables = df.shape
+    binary_features = []
+    
+    EPSILON = np.finfo(float).eps
+
     ccy_pairs = set([s.split('_')[0] for s in df.columns])
+    dfs = []
     for instr in ccy_pairs:
-        df["{}_log_ret_binary".format(instr)] = df["{}_log_ret".format(instr)].apply(lambda x: format(int(x * 1e15), '016b'))
-    return df
+        curr_samples = df["{}_log_ret".format(instr)]
+        
+        X_min = curr_samples.min() - EPSILON
+        X_max = curr_samples.max() + EPSILON
+        
+        X_integer = ((curr_samples - X_min) / (X_max - X_min) * 65535).astype(int)
+        X_binary = X_integer.apply(lambda x: format(x, '016b'))
+        
+        binary_split = X_binary.apply(list)
+        
+        binary_df = pd.DataFrame(binary_split.tolist(), columns=[f'{instr}_{i:02}' for i in range(1, 17)])
+        
+        dfs.append(binary_df)
+
+    return pd.concat(dfs, axis=1).dropna()
