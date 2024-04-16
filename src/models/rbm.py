@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.neural_network import BernoulliRBM
 
-from src.data_utils import get_min_max_info, to_float
+from src.data_utils import get_min_max_info, to_float, get_latest_value, compute_log_ret
 
 rbm = BernoulliRBM(n_components=256, 
                    learning_rate=0.1, 
@@ -43,8 +43,12 @@ def get_synthetic_series(rbm: BernoulliRBM, log_ret_df: pd.DataFrame, pairs: lis
     synth.columns = pairs
 
     min_max = get_min_max_info(log_ret_df)
-    res = to_float(synth, min_max)
+    log_synth = to_float(synth, min_max) # Synthetic log returns
 
-    np.exp(res) - 1
+    res = np.exp(log_synth).cumprod() # Cumulated returns
+
+    fx0 = get_latest_value(log_ret_df)
+    for column, factor in fx0.items():
+        res[column] *= factor
 
     return res

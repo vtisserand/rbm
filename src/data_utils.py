@@ -23,11 +23,17 @@ def get_fx_data(pairs: list[str], start_date: str='2020-01-01', end_date: str='2
     return closing_prices
 
 def compute_log_ret(df: pd.DataFrame):
+    result_df = df.copy()
     for instr in df.columns:
-        df["{}_log_ret".format(instr)] = np.log(df["{}".format(instr)] / df["{}".format(instr)].shift(1))
-    return df.iloc[1:]
+        result_df["{}_log_ret".format(instr)] = np.log(result_df["{}".format(instr)] / result_df["{}".format(instr)].shift(1))
+    return result_df.iloc[1:]
 
-    
+def _get_ccy_pairs(df: pd.DataFrame) -> list:
+    """
+    From a dataframe with column names, retrieve an ordered set or the currency pairs monitored.
+    """
+    return sorted(set([s.split('_')[0] for s in df.columns]), key=df.columns.tolist().index)
+
 def to_binary(df: pd.DataFrame) -> pd.DataFrame:
     """
     To map log returns to a 16-bits digit, we compute the spread between the current value
@@ -76,7 +82,7 @@ def to_float(df: pd.DataFrame, min_max: dict) -> pd.DataFrame:
     pass the min-max log returns per instrument (e.g. USDBRL moves more than USDJPY).
     """
     # Group the columns e.g. EURUSD_01, ..., EURUSD_16 belong to the EURUSD variable.
-    ccy_pairs = list(set([s.split('_')[0] for s in df.columns]))
+    ccy_pairs = list(sorted(set([s.split('_')[0] for s in df.columns]), key=[x[0] for x in df.columns.str.split('_')].index))
 
     grouped = df.groupby(lambda x: x.split('_')[0], axis=1)
     for ccy, group in grouped:
@@ -93,3 +99,11 @@ def to_float(df: pd.DataFrame, min_max: dict) -> pd.DataFrame:
         dfs.append(pd.DataFrame(X_real, columns=[instr]))
     
     return pd.concat(dfs, axis=1)
+
+def get_latest_value(df: pd.DataFrame) -> dict:
+    """
+    Once we have generated log returns, we need to convert the data back to an exchange rate.
+    We need the latest traded value to do so.
+    """
+    ccy_pairs = _get_ccy_pairs(df)
+    return df[ccy_pairs].iloc[-1].to_dict()
