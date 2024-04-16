@@ -4,7 +4,10 @@ CCY_PAIRS = ["EURUSD",
              "EURNOK",
              "EURSEK",
              "NOKSEK",
-             "USDBRL",]
+             "USDBRL",
+             "AUDUSD",
+             "USDCAD",
+             "EURPLN",]
 
 START_DATE = '2010-01-01'
 END_DATE = '2023-12-31'

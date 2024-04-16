@@ -34,9 +34,6 @@ def to_binary(df: pd.DataFrame) -> pd.DataFrame:
     and the minimum value amongst all the samples, and get a [0,1]-valued float computing
     (X_curr - X_min) / (X_max - X_min). Then, multiply by 65535 (2^16 - 1).
     """
-    Nsamples, Nvariables = df.shape
-    binary_features = []
-    
     EPSILON = np.finfo(float).eps
 
     ccy_pairs = set([s.split('_')[0] for s in df.columns])
