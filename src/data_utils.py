@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
-def get_fx_data(pairs: list[str], start_date: str='2020-01-01', end_date: str='2023-12-31', df: bool=False) -> dict:
+def get_fx_data(pairs: list[str], start_date: str='2020-01-01', end_date: str='2023-12-31', df: bool=True) -> dict:
     ccy_pairs = [pair + '=X' for pair in pairs]
 
     start_date = start_date
