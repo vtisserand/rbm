@@ -36,7 +36,7 @@ def generate_synthetic_samples(rbm: BernoulliRBM, n_samples: int=1, n_gibbs_step
 
     return synthetic_samples
 
-def get_synthetic_series(rbm: BernoulliRBM, log_ret_df: pd.DataFrame, pairs: list[str], n_samples: int=10):
+def get_synthetic_samples(rbm: BernoulliRBM, log_ret_df: pd.DataFrame, pairs: list[str], n_samples: int=10):
     synth = generate_synthetic_samples(rbm, n_samples=n_samples)
     synth = pd.DataFrame(synth)
     synth = synth.astype(int)
@@ -45,6 +45,10 @@ def get_synthetic_series(rbm: BernoulliRBM, log_ret_df: pd.DataFrame, pairs: lis
     min_max = get_min_max_info(log_ret_df)
     log_synth = to_float(synth, min_max) # Synthetic log returns
 
+    return log_synth
+
+def get_synthetic_series(rbm: BernoulliRBM, log_ret_df: pd.DataFrame, pairs: list[str], n_samples: int=10):
+    log_synth = get_synthetic_samples(rbm, log_ret_df, pairs, n_samples)
     res = np.exp(log_synth).cumprod() # Cumulated returns
 
     fx0 = get_latest_value(log_ret_df)
