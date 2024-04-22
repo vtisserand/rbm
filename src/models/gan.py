@@ -77,7 +77,7 @@ class GAN:
                 self.g_optimizer.step()
 
             # Print progress
-            if epoch % 10 == 0 or epoch < 3:
+            if epoch % 100 == 0 or epoch < 3:
                 print(f"Epoch [{epoch}/{epochs}], Batch [{i}/{len(data_loader)}], "
                         f"D Loss: {d_loss.item():.4f}, G Loss: {g_loss.item():.4f}")
 
@@ -85,6 +85,7 @@ class GAN:
         self.generator.eval()
         with torch.no_grad():
             noise = torch.randn(n_samples, self.latent_dim, device=self.device)
-            generated_samples = self.generator(noise).cpu().numpy()
+            generated_samples = self.generator(noise)
+            generated_samples = generated_samples.cpu().numpy()
         self.generator.train()
         return generated_samples
