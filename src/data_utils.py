@@ -1,8 +1,13 @@
 import numpy as np
 import pandas as pd
 import yfinance as yf
+from typing import List
+from scipy.stats import pearsonr, kendalltau, spearmanr
+from itertools import combinations
+import matplotlib.pyplot as plt
+import scipy.stats as stats
 
-def get_fx_data(pairs: list[str], start_date: str='2020-01-01', end_date: str='2023-12-31', df: bool=True) -> dict:
+def get_fx_data(pairs: List[str], start_date: str='2020-01-01', end_date: str='2023-12-31', df: bool=True) -> dict:
     ccy_pairs = [pair + '=X' for pair in pairs]
 
     start_date = start_date
@@ -107,3 +112,51 @@ def get_latest_value(df: pd.DataFrame) -> dict:
     """
     ccy_pairs = _get_ccy_pairs(df)
     return df[ccy_pairs].iloc[-1].to_dict()
+    
+def calculate_correlation(observed_data, generative_data):
+    """
+
+    """
+    corr_types = ['pearson', 'kendall', 'spearman']
+    data = {('Observed sample', corr): [] for corr in corr_types}
+    data.update({('RBM sample', corr): [] for corr in corr_types})
+    pairs = []
+
+    for (col1, col2) in combinations(observed_data.columns, 2):
+        pairs.append(f'{col1} / {col2}')
+        for corr_type in corr_types:
+            obs_corr = observed_data[[col1, col2]].corr(method=corr_type).iloc[0, 1]
+            gen_corr = generative_data[[col1, col2]].corr(method=corr_type).iloc[0, 1]
+
+            data[('Observed sample', corr_type)].append(obs_corr)
+            data[('RBM sample', corr_type)].append(gen_corr)
+
+    correlations_df = pd.DataFrame(data, index=pairs)
+    correlations_df.index.name = 'Pairs'
+    
+    return correlations_df
+
+def historical_volatility(data, window=252):
+    
+    daily_vol = data.pct_change().std()  
+    annualized_vol = daily_vol * np.sqrt(window)  
+    return annualized_vol*100
+
+def tail_dependence_function(x, y, quantiles):
+    lower_tail_func = []
+    upper_tail_func = []
+    
+    for q in quantiles:
+        # Lower tail dependence: P(Y < F_Y^(-1)(q) | X < F_X^(-1)(q))
+        lower_threshold_x = np.quantile(x, q)
+        lower_threshold_y = np.quantile(y, q)
+        lower_tail_prob = np.mean(y[x <= lower_threshold_x] <= lower_threshold_y)
+        lower_tail_func.append(lower_tail_prob)
+        
+        # Upper tail dependence: P(Y > F_Y^(-1)(1-q) | X > F_X^(-1)(1-q))
+        upper_threshold_x = np.quantile(x, 1 - q)
+        upper_threshold_y = np.quantile(y, 1 - q)
+        upper_tail_prob = np.mean(y[x >= upper_threshold_x] >= upper_threshold_y)
+        upper_tail_func.append(upper_tail_prob)
+    
+    return lower_tail_func, upper_tail_func[::-1]

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.neural_network import BernoulliRBM
-
+from typing import List
 from src.data_utils import get_min_max_info, to_float, get_latest_value, compute_log_ret
 
 rbm = BernoulliRBM(n_components=256, 
@@ -36,7 +36,7 @@ def generate_synthetic_samples(rbm: BernoulliRBM, n_samples: int=1, n_gibbs_step
 
     return synthetic_samples
 
-def get_synthetic_samples(rbm: BernoulliRBM, log_ret_df: pd.DataFrame, pairs: list[str], n_samples: int=10):
+def get_synthetic_samples(rbm: BernoulliRBM, log_ret_df: pd.DataFrame, pairs: List[str], n_samples: int=10):
     synth = generate_synthetic_samples(rbm, n_samples=n_samples)
     synth = pd.DataFrame(synth)
     synth = synth.astype(int)
@@ -47,7 +47,7 @@ def get_synthetic_samples(rbm: BernoulliRBM, log_ret_df: pd.DataFrame, pairs: li
 
     return log_synth
 
-def get_synthetic_series(rbm: BernoulliRBM, log_ret_df: pd.DataFrame, pairs: list[str], n_samples: int=10):
+def get_synthetic_series(rbm: BernoulliRBM, log_ret_df: pd.DataFrame, pairs: List[str], n_samples: int=10):
     log_synth = get_synthetic_samples(rbm, log_ret_df, pairs, n_samples)
     res = np.exp(log_synth).cumprod() # Cumulated returns
 
