@@ -123,7 +123,7 @@ def calculate_correlation(observed_data, generative_data):
     pairs = []
 
     for (col1, col2) in combinations(observed_data.columns, 2):
-        pairs.append(f'{col1} / {col2}')
+        pairs.append(f'{col1}/{col2}')
         for corr_type in corr_types:
             obs_corr = observed_data[[col1, col2]].corr(method=corr_type).iloc[0, 1]
             gen_corr = generative_data[[col1, col2]].corr(method=corr_type).iloc[0, 1]

@@ -1,6 +1,7 @@
 # macOS stuff
 *.DS_Store
 
+*.vscode/
 # misc
 nbs/.ipynb_checkpoints/
 report/img/in.mov

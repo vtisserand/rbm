@@ -9,7 +9,9 @@ CCY_PAIRS = ["EURUSD",
              "USDCAD",
              "EURPLN",
              "EURDKK",
-             "USDCNY"]
+             "USDCNY",
+             "EURCHF",
+             "USDCHF"]
 
 START_DATE = '2010-01-01'
 END_DATE = '2023-12-31'

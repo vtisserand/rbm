@@ -33,7 +33,7 @@ def simulate_correlated_returns(data, days=252, iterations=1000):
             simulated_paths[t, :, i] = simulated_paths[t-1, :, i] * daily_returns[:, t-1]
 
     simulation_results = {}
-    for idx, ticker in enumerate(data.columns):
-        simulation_results[ticker] = simulated_paths[:, idx, :].flatten() 
+    for idx, CCY in enumerate(data.columns):
+        simulation_results[CCY] = simulated_paths[:, idx, :].flatten() 
 
     return pd.DataFrame(simulation_results)
