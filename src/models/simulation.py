@@ -10,7 +10,7 @@ def drift_calc(data):
     drift = lr.mean() - 0.5 * lr.var()
     return drift.values
 
-def simulate_correlated_returns(data, days=252, iterations=1000):
+def simulate_correlated_returns(data, days=100, iterations=1000):
     """ 
     Simulate correlated return paths using Cholesky decomposition and Monte Carlo simulation.
 
